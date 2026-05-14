@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>СравниГаджет — Сравнение характеристик и цен</title>
+  <meta name="description" content="Удобное сравнение смартфонов, ноутбуков и умных часов. Наглядные таблицы, фильтры и актуальные цены в рублях.">
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #10b981;
+      --border: #e5e7eb;
+      --hover: #f8fafc;
+      --radius: 10px;
+      --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    button { cursor: pointer; border: none; font-family: inherit; }
+    input, select { font-family: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; background: #fff; }
+
+    /* 🔵 Синий ползунок цены */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: var(--accent-hover);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Header */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      padding: 14px 0;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+    .header-inner { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    nav a { margin-left: 20px; font-weight: 500; color: var(--text-muted); transition: color 0.2s; font-size: 15px; }
+    nav a:hover, nav a.active { color: var(--accent); }
+    .mobile-menu-btn { display: none; background: none; font-size: 24px; }
+
+    /* Main */
+    main { padding: 24px 0 90px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+
+    /* Filters */
+    .controls { 
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+      gap: 12px; margin-bottom: 20px; background: var(--card); 
+      padding: 16px; border-radius: var(--radius); box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    }
+    .control-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--text-muted); }
+    .range-wrap { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* List Layout */
+    .device-list { display: flex; flex-direction: column; gap: 0; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .list-header {
+      display: grid; grid-template-columns: 70px 1fr auto auto auto auto;
+      align-items: center; gap: 12px; padding: 12px 16px;
+      background: #f9fafb; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text-muted);
+    }
+    .device-row { 
+      display: grid; 
+      grid-template-columns: 70px 1fr auto auto auto auto;
+      align-items: center; 
+      gap: 12px; 
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border); 
+      transition: background 0.2s;
+    }
+    .device-row:last-child { border-bottom: none; }
+    .device-row:hover { background: var(--hover); }
+    
+    .row-img { width: 60px; height: 60px; border-radius: 6px; overflow: hidden; background: #e5e7eb; flex-shrink: 0; }
+    .row-img img { width: 100%; height: 100%; object-fit: cover; }
+    .row-info { min-width: 0; }
+    .row-title { font-weight: 600; font-size: 16px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-brand { font-size: 13px; color: var(--text-muted); }
+    .row-specs { font-size: 13px; color: var(--text-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-meta { text-align: right; min-width: 100px; }
+    .row-rating { font-size: 13px; color: #f59e0b; margin-bottom: 2px; font-weight: 500; }
+    .row-price { font-weight: 700; color: var(--accent); font-size: 16px; }
+    
+    /* Кнопки магазинов */
+    .buy-links { 
+      display: flex; 
+      gap: 6px; 
+      flex-wrap: wrap; 
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .buy-btn {
+      display: inline-block;
+      padding: 5px 10px;
+      text-decoration: none;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .buy-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .dns       { background: #f5a623; }
+    .citilink  { background: #0056b3; }
+    .ymarket   { background: #fc3f1d; }
+    .mvideo    { background: #00a651; }
+
+    .row-action button { padding: 8px 14px; border-radius: 6px; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+    .btn-compare { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-compare:hover { background: #f3f4f6; }
+    .btn-compare.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* Compare Panel — СНИЗУ */
+    .compare-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
+      border-top: 1px solid var(--border); padding: 12px 16px; box-shadow: 0 -4px 6px rgba(0,0,0,0.05);
+      z-index: 90; display: none; justify-content: space-between; align-items: center;
+    }
+    .compare-panel.show { display: flex; }
+    .compare-count { font-weight: 600; }
+    .compare-actions { display: flex; gap: 10px; }
+    .btn-sm { padding: 8px 14px; border-radius: 6px; font-size: 14px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: #f3f4f6; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    /* Comparison Table */
+    #compare-view { display: none; padding-top: 20px; }
+    .table-wrapper { overflow-x: auto; background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th:first-child { position: sticky; left: 0; background: var(--card); font-weight: 600; color: var(--text-muted); z-index: 10; min-width: 160px; }
+    th { background: #f9fafb; font-weight: 500; font-size: 14px; }
+    .spec-row { font-size: 14px; }
+    .best-value { color: var(--success); font-weight: 700; position: relative; padding-left: 22px; }
+    .best-value::before { content: '▲'; color: var(--success); position: absolute; left: 6px; font-size: 10px; top: 50%; transform: translateY(-50%); }
+    .price-cell { color: var(--accent); font-weight: 700; }
+    .price-cell.best-value::before { content: '▼'; }
+    .hidden-spec { display: none; }
+    .toggle-specs { margin: 14px 0; background: transparent; color: var(--accent); font-weight: 500; font-size: 14px; padding: 4px 0; }
+    .toggle-specs:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .list-header, .device-row { grid-template-columns: 50px 1fr auto auto auto !important; }
+      .buy-links { justify-content: flex-start; }
+    }
+    @media (max-width: 768px) {
+      .header-inner nav { display: none; }
+      .mobile-menu-btn { display: block; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .list-header, .device-row { grid-template-columns: 50px 1fr auto auto auto !important; gap: 10px; padding: 10px 12px; }
+      .row-img { width: 40px; height: 40px; }
+      .buy-links { gap: 4px; }
+      .buy-btn { padding: 4px 8px; font-size: 11px; }
+      .row-action { display: none; }
+    }
+    @media (max-width: 480px) {
+      .controls { grid-template-columns: 1fr; }
+      .list-header { display: none; }
+      .device-row { grid-template-columns: 1fr auto; gap: 8px; }
+      .row-img { display: none; }
+      .row-specs { font-size: 12px; }
+      .row-meta { min-width: auto; text-align: right; font-size: 13px; }
+      .buy-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="logo">СравниГаджет</div>
+      <nav>
+        <a href="#" class="active">Каталог</a>
+      </nav>
+      <button class="mobile-menu-btn">☰</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Каталог устройств</h1>
+    
+    <div id="catalog-view">
+      <div class="controls">
+        <div class="control-group">
+          <label>Категория</label>
+          <select id="filter-category">
+            <option value="all">Все</option>
+            <option value="smartphone">Смартфоны</option>
+            <option value="laptop">Ноутбуки</option>
+            <option value="watch">Умные часы</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Бренд</label>
+          <select id="filter-brand">
+            <option value="all">Все</option>
+            <option value="Apple">Apple</option>
+            <option value="Samsung">Samsung</option>
+            <option value="Xiaomi">Xiaomi</option>
+            <option value="Huawei">Huawei</option>
+            <option value="ASUS">ASUS</option>
+            <option value="OnePlus">OnePlus</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="Realme">Realme</option>
+            <option value="Honor">Honor</option>
+            <option value="Google">Google</option>
+            <option value="Nothing">Nothing</option>
+            <option value="Garmin">Garmin</option>
+            <option value="HP">HP</option>
+            <option value="Dell">Dell</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Цена до</label>
+          <input type="range" id="filter-price" min="10000" max="300000" step="5000" value="300000">
+          <div class="range-wrap"><span>10 000 ₽</span><span id="price-val">300 000 ₽</span></div>
+        </div>
+        <div class="control-group">
+          <label>ОЗУ от</label>
+          <select id="filter-ram">
+            <option value="all">Любая</option>
+            <option value="4">4 ГБ</option>
+            <option value="8">8 ГБ</option>
+            <option value="16">16 ГБ</option>
+            <option value="32">32 ГБ</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Сортировка</label>
+          <select id="sort">
+            <option value="pop">По популярности</option>
+            <option value="price-asc">Цена ↑</option>
+            <option value="price-desc">Цена ↓</option>
+            <option value="year">Год выпуска</option>
+            <option value="rating">Рейтинг</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="device-list" id="device-list"></div>
+    </div>
+
+    <div id="compare-view">
+      <button class="btn-sm btn-outline" onclick="toggleView('catalog'); return false;" style="margin-bottom: 14px;">← Назад в каталог</button>
+      <h2 style="margin-bottom: 12px;">Сравнение устройств</h2>
+      <button id="toggle-full-specs" class="toggle-specs" onclick="toggleSpecsVisibility(); return false;">Показать все характеристики</button>
+      <div class="table-wrapper">
+        <table id="compare-table">
+          <thead id="compare-head"></thead>
+          <tbody id="compare-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ПАНЕЛЬ СРАВНЕНИЯ СНИЗУ -->
+  <div class="compare-panel" id="compare-panel">
+    <div>Для сравнения: <span class="compare-count" id="count">0</span>/5</div>
+    <div class="compare-actions">
+      <button class="btn-sm btn-outline" onclick="clearCompare()">Очистить</button>
+      <button class="btn-sm btn-primary" onclick="renderCompareTable()">Сравнить</button>
+    </div>
+  </div>
+
+  <script>
+    // 🔥 РАСШИРЕННЫЙ КАТАЛОГ: 80 устройств (2024-2026)
+    const devices = [
+      // === СМАРТФОНЫ: Apple ===
+      { id: 1, brand: "Apple", model: "iPhone 15", category: "smartphone", price: 79990, year: 2023, rating: 4.8, ram: 6, storage: 128, screen: 6.1, battery: 3349, processor: "A16 Bionic", camera: "48+12 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+      { id: 2, brand: "Apple", model: "iPhone 15 Pro", category: "smartphone", price: 119990, year: 2023, rating: 4.9, ram: 8, storage: 256, screen: 6.1, battery: 3274, processor: "A17 Pro", camera: "48+12+12 Мп", features: ["5G", "NFC", "Титан"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+      { id: 3, brand: "Apple", model: "iPhone 15 Pro Max", category: "smartphone", price: 139990, year: 2023, rating: 4.9, ram: 8, storage: 256, screen: 6.7, battery: 4422, processor: "A17 Pro", camera: "48+12+12 Мп", features: ["5G", "NFC", "Титан"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+      { id: 4, brand: "Apple", model: "iPhone 16", category: "smartphone", price: 89990, year: 2024, rating: 4.8, ram: 8, storage: 128, screen: 6.1, battery: 3561, processor: "A18", camera: "48+12 Мп", features: ["5G", "NFC", "Action Button"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+      { id: 5, brand: "Apple", model: "iPhone 16 Pro Max", category: "smartphone", price: 159990, year: 2024, rating: 4.9, ram: 8, storage: 256, screen: 6.9, battery: 4685, processor: "A18 Pro", camera: "48+48+12 Мп", features: ["5G", "NFC", "Титан", "5х зум"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+      { id: 6, brand: "Apple", model: "iPhone SE 2024", category: "smartphone", price: 49990, year: 2024, rating: 4.4, ram: 6, storage: 128, screen: 4.7, battery: 2018, processor: "A15 Bionic", camera: "12 Мп", features: ["5G", "NFC", "Touch ID"], image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+
+      // === СМАРТФОНЫ: Samsung ===
+      { id: 7, brand: "Samsung", model: "Galaxy S24", category: "smartphone", price: 89990, year: 2024, rating: 4.7, ram: 8, storage: 256, screen: 6.2, battery: 4000, processor: "Snapdragon 8 Gen 3", camera: "50+12+10 Мп", features: ["5G", "NFC", "IP68", "AI"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 8, brand: "Samsung", model: "Galaxy S24 Ultra", category: "smartphone", price: 129990, year: 2024, rating: 4.8, ram: 12, storage: 512, screen: 6.8, battery: 5000, processor: "Snapdragon 8 Gen 3", camera: "200+50+12+10 Мп", features: ["5G", "NFC", "S Pen", "IP68"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 9, brand: "Samsung", model: "Galaxy S25", category: "smartphone", price: 99990, year: 2025, rating: 4.8, ram: 12, storage: 256, screen: 6.2, battery: 4200, processor: "Snapdragon 8 Gen 4", camera: "50+12+10 Мп", features: ["5G", "NFC", "IP68", "Galaxy AI"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 10, brand: "Samsung", model: "Galaxy Z Fold 6", category: "smartphone", price: 169990, year: 2024, rating: 4.6, ram: 12, storage: 512, screen: 7.6, battery: 4400, processor: "Snapdragon 8 Gen 3", camera: "50+12+10 Мп", features: ["5G", "NFC", "Складной", "S Pen"], image: "https://images.unsplash.com/photo-1666246998840-5f60936b3f8a?w=400" },
+      { id: 11, brand: "Samsung", model: "Galaxy Z Flip 6", category: "smartphone", price: 109990, year: 2024, rating: 4.5, ram: 12, storage: 256, screen: 6.7, battery: 4000, processor: "Snapdragon 8 Gen 3", camera: "50+12 Мп", features: ["5G", "NFC", "Складной"], image: "https://images.unsplash.com/photo-1666246998840-5f60936b3f8a?w=400" },
+      { id: 12, brand: "Samsung", model: "Galaxy A55", category: "smartphone", price: 34990, year: 2024, rating: 4.3, ram: 8, storage: 128, screen: 6.6, battery: 5000, processor: "Exynos 1480", camera: "50+12+5 Мп", features: ["5G", "NFC", "IP67"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 13, brand: "Samsung", model: "Galaxy A35", category: "smartphone", price: 27990, year: 2024, rating: 4.2, ram: 6, storage: 128, screen: 6.6, battery: 5000, processor: "Exynos 1380", camera: "50+8+5 Мп", features: ["5G", "NFC", "IP67"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+
+      // === СМАРТФОНЫ: Xiaomi / Poco / Redmi ===
+      { id: 14, brand: "Xiaomi", model: "14 Ultra", category: "smartphone", price: 119990, year: 2024, rating: 4.8, ram: 16, storage: 512, screen: 6.73, battery: 5300, processor: "Snapdragon 8 Gen 3", camera: "4x50 Мп Leica", features: ["5G", "NFC", "IP68", "120W"], image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+      { id: 15, brand: "Xiaomi", model: "14 Pro", category: "smartphone", price: 89990, year: 2024, rating: 4.7, ram: 12, storage: 256, screen: 6.73, battery: 4880, processor: "Snapdragon 8 Gen 3", camera: "50+50+50 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+      { id: 16, brand: "Xiaomi", model: "14", category: "smartphone", price: 69990, year: 2024, rating: 4.6, ram: 12, storage: 256, screen: 6.36, battery: 4610, processor: "Snapdragon 8 Gen 3", camera: "50+50+50 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+      { id: 17, brand: "Xiaomi", model: "Redmi Note 13 Pro+", category: "smartphone", price: 34990, year: 2024, rating: 4.5, ram: 12, storage: 512, screen: 6.67, battery: 5000, processor: "Dimensity 7200", camera: "200+8+2 Мп", features: ["5G", "NFC", "IP68", "120W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 18, brand: "Xiaomi", model: "Redmi Note 13 Pro", category: "smartphone", price: 24990, year: 2024, rating: 4.4, ram: 8, storage: 256, screen: 6.67, battery: 5100, processor: "Snapdragon 7s Gen 2", camera: "200+8+2 Мп", features: ["4G", "NFC", "IP54"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 19, brand: "Xiaomi", model: "Poco F6 Pro", category: "smartphone", price: 44990, year: 2024, rating: 4.5, ram: 12, storage: 512, screen: 6.67, battery: 5000, processor: "Snapdragon 8 Gen 2", camera: "50+8+2 Мп", features: ["5G", "NFC", "120W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 20, brand: "Xiaomi", model: "Poco X6 Pro", category: "smartphone", price: 32990, year: 2024, rating: 4.4, ram: 8, storage: 256, screen: 6.67, battery: 5000, processor: "Dimensity 8300", camera: "64+8+2 Мп", features: ["5G", "NFC", "67W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 21, brand: "Xiaomi", model: "Redmi 13C", category: "smartphone", price: 12990, year: 2024, rating: 4.1, ram: 4, storage: 128, screen: 6.74, battery: 5000, processor: "Helio G85", camera: "50+2 Мп", features: ["4G", "NFC", "Бюджет"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+
+      // === СМАРТФОНЫ: Google / Nothing / OnePlus ===
+      { id: 22, brand: "Google", model: "Pixel 9 Pro", category: "smartphone", price: 109990, year: 2024, rating: 4.7, ram: 12, storage: 256, screen: 6.3, battery: 4700, processor: "Tensor G4", camera: "50+48+48 Мп", features: ["5G", "NFC", "IP68", "AI"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 23, brand: "Google", model: "Pixel 9", category: "smartphone", price: 84990, year: 2024, rating: 4.6, ram: 12, storage: 128, screen: 6.3, battery: 4700, processor: "Tensor G4", camera: "50+48 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 24, brand: "Google", model: "Pixel 8a", category: "smartphone", price: 49990, year: 2024, rating: 4.5, ram: 8, storage: 128, screen: 6.1, battery: 4492, processor: "Tensor G3", camera: "64+12 Мп", features: ["5G", "NFC", "IP67"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 25, brand: "Nothing", model: "Phone (3)", category: "smartphone", price: 64990, year: 2025, rating: 4.5, ram: 12, storage: 256, screen: 6.78, battery: 5000, processor: "Snapdragon 8s Gen 3", camera: "50+50 Мп", features: ["5G", "NFC", "Glyph Interface"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 26, brand: "Nothing", model: "Phone (2a)", category: "smartphone", price: 34990, year: 2024, rating: 4.3, ram: 8, storage: 256, screen: 6.7, battery: 5000, processor: "Dimensity 7200", camera: "50+50 Мп", features: ["5G", "NFC", "Glyph"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 27, brand: "OnePlus", model: "13", category: "smartphone", price: 94990, year: 2025, rating: 4.7, ram: 16, storage: 512, screen: 6.82, battery: 6000, processor: "Snapdragon 8 Elite", camera: "50+50+64 Мп", features: ["5G", "NFC", "100W"], image: "https://images.unsplash.com/photo-1660463975891-5f69a1999fea?w=400" },
+      { id: 28, brand: "OnePlus", model: "12", category: "smartphone", price: 79990, year: 2024, rating: 4.6, ram: 12, storage: 256, screen: 6.82, battery: 5400, processor: "Snapdragon 8 Gen 3", camera: "50+64+48 Мп", features: ["5G", "NFC", "100W"], image: "https://images.unsplash.com/photo-1660463975891-5f69a1999fea?w=400" },
+      { id: 29, brand: "OnePlus", model: "Nord 4", category: "smartphone", price: 44990, year: 2024, rating: 4.4, ram: 12, storage: 256, screen: 6.74, battery: 5500, processor: "Snapdragon 7+ Gen 3", camera: "50+8 Мп", features: ["5G", "NFC", "100W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+
+      // === СМАРТФОНЫ: Huawei / Honor / Realme ===
+      { id: 30, brand: "Huawei", model: "Pura 70 Ultra", category: "smartphone", price: 109990, year: 2024, rating: 4.6, ram: 16, storage: 512, screen: 6.8, battery: 5200, processor: "Kirin 9010", camera: "50+40+50 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=400" },
+      { id: 31, brand: "Huawei", model: "Pura 70 Pro", category: "smartphone", price: 89990, year: 2024, rating: 4.5, ram: 12, storage: 512, screen: 6.8, battery: 5050, processor: "Kirin 9010", camera: "50+12.5+40 Мп", features: ["5G", "NFC", "IP65"], image: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=400" },
+      { id: 32, brand: "Honor", model: "Magic 7 Pro", category: "smartphone", price: 94990, year: 2025, rating: 4.7, ram: 16, storage: 512, screen: 6.8, battery: 5600, processor: "Snapdragon 8 Elite", camera: "50+200+50 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 33, brand: "Honor", model: "Magic 6 Pro", category: "smartphone", price: 84990, year: 2024, rating: 4.6, ram: 12, storage: 512, screen: 6.8, battery: 5600, processor: "Snapdragon 8 Gen 3", camera: "50+180+50 Мп", features: ["5G", "NFC", "IP68"], image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400" },
+      { id: 34, brand: "Honor", model: "200 Pro", category: "smartphone", price: 54990, year: 2024, rating: 4.4, ram: 12, storage: 512, screen: 6.78, battery: 5000, processor: "Snapdragon 8s Gen 3", camera: "200+50+12 Мп", features: ["5G", "NFC", "100W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 35, brand: "Realme", model: "GT 6", category: "smartphone", price: 54990, year: 2024, rating: 4.5, ram: 12, storage: 256, screen: 6.78, battery: 5500, processor: "Snapdragon 8s Gen 3", camera: "50+50+8 Мп", features: ["5G", "NFC", "120W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 36, brand: "Realme", model: "GT 5 Pro", category: "smartphone", price: 64990, year: 2024, rating: 4.5, ram: 12, storage: 256, screen: 6.78, battery: 5400, processor: "Snapdragon 8 Gen 3", camera: "50+50+8 Мп", features: ["5G", "NFC", "120W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+      { id: 37, brand: "Realme", model: "C67", category: "smartphone", price: 22990, year: 2024, rating: 4.2, ram: 8, storage: 256, screen: 6.72, battery: 5000, processor: "Snapdragon 685", camera: "108+2 Мп", features: ["4G", "NFC", "33W"], image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+
+      // === НОУТБУКИ: Apple ===
+      { id: 38, brand: "Apple", model: "MacBook Air M2", category: "laptop", price: 119990, year: 2022, rating: 4.9, ram: 8, storage: 256, screen: 13.6, battery: 18, processor: "Apple M2", camera: "1080p", weight: 1.24, features: ["Wi-Fi 6", "Thunderbolt"], image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+      { id: 39, brand: "Apple", model: "MacBook Air M3 13\"", category: "laptop", price: 134990, year: 2024, rating: 4.9, ram: 8, storage: 256, screen: 13.6, battery: 18, processor: "Apple M3", camera: "1080p", weight: 1.24, features: ["Wi-Fi 6E", "Thunderbolt"], image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+      { id: 40, brand: "Apple", model: "MacBook Air M3 15\"", category: "laptop", price: 154990, year: 2024, rating: 4.9, ram: 8, storage: 256, screen: 15.3, battery: 18, processor: "Apple M3", camera: "1080p", weight: 1.51, features: ["Wi-Fi 6E", "Thunderbolt"], image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+      { id: 41, brand: "Apple", model: "MacBook Pro 14 M4", category: "laptop", price: 199990, year: 2024, rating: 4.9, ram: 16, storage: 512, screen: 14.2, battery: 17, processor: "Apple M4", camera: "1080p", weight: 1.55, features: ["Wi-Fi 6E", "Mini-LED", "Thunderbolt 5"], image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+      { id: 42, brand: "Apple", model: "MacBook Pro 16 M4 Pro", category: "laptop", price: 279990, year: 2024, rating: 4.9, ram: 18, storage: 512, screen: 16.2, battery: 22, processor: "Apple M4 Pro", camera: "1080p", weight: 2.15, features: ["Wi-Fi 6E", "Mini-LED", "Thunderbolt 5"], image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+
+      // === НОУТБУКИ: ASUS / Lenovo / HP / Dell ===
+      { id: 43, brand: "ASUS", model: "Zenbook S 14", category: "laptop", price: 119990, year: 2024, rating: 4.7, ram: 16, storage: 512, screen: 14, battery: 15, processor: "Core Ultra 7", camera: "1080p", weight: 1.28, features: ["Wi-Fi 6E", "OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 44, brand: "ASUS", model: "Zenbook 14 OLED", category: "laptop", price: 89990, year: 2024, rating: 4.6, ram: 16, storage: 512, screen: 14, battery: 14, processor: "Core Ultra 5", camera: "1080p", weight: 1.39, features: ["Wi-Fi 6E", "OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 45, brand: "ASUS", model: "Vivobook 15", category: "laptop", price: 54990, year: 2024, rating: 4.3, ram: 8, storage: 512, screen: 15.6, battery: 10, processor: "Core i5-1335U", camera: "720p", weight: 1.7, features: ["Wi-Fi 6", "IPS"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 46, brand: "ASUS", model: "ROG Zephyrus G14", category: "laptop", price: 169990, year: 2024, rating: 4.7, ram: 32, storage: 1024, screen: 14, battery: 10, processor: "Ryzen 9 8945HS", camera: "720p", weight: 1.65, features: ["Wi-Fi 6E", "RTX 4070"], image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400" },
+      { id: 47, brand: "ASUS", model: "ROG Strix G16", category: "laptop", price: 149990, year: 2024, rating: 4.6, ram: 16, storage: 1024, screen: 16, battery: 8, processor: "Core i7-14650HX", camera: "720p", weight: 2.5, features: ["Wi-Fi 6E", "RTX 4060"], image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400" },
+      
+      { id: 48, brand: "Lenovo", model: "ThinkPad X1 Carbon Gen 12", category: "laptop", price: 179990, year: 2024, rating: 4.8, ram: 16, storage: 512, screen: 14, battery: 12, processor: "Core Ultra 7", camera: "1080p", weight: 1.12, features: ["Wi-Fi 6E", "4G LTE"], image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400" },
+      { id: 49, brand: "Lenovo", model: "Yoga Slim 7i", category: "laptop", price: 94990, year: 2024, rating: 4.5, ram: 16, storage: 512, screen: 14, battery: 14, processor: "Core Ultra 5", camera: "1080p", weight: 1.45, features: ["Wi-Fi 6E", "OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 50, brand: "Lenovo", model: "Legion Pro 7i", category: "laptop", price: 219990, year: 2024, rating: 4.8, ram: 32, storage: 1024, screen: 16, battery: 8, processor: "Core i9-14900HX", camera: "1080p", weight: 2.5, features: ["Wi-Fi 7", "RTX 4090"], image: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400" },
+      { id: 51, brand: "Lenovo", model: "IdeaPad Slim 3", category: "laptop", price: 49990, year: 2024, rating: 4.2, ram: 8, storage: 256, screen: 15.6, battery: 11, processor: "Ryzen 5 7530U", camera: "720p", weight: 1.63, features: ["Wi-Fi 6", "FHD"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      
+      { id: 52, brand: "HP", model: "Spectre x360 14", category: "laptop", price: 139990, year: 2024, rating: 4.6, ram: 16, storage: 512, screen: 14, battery: 13, processor: "Core Ultra 7", camera: "1080p", weight: 1.39, features: ["Wi-Fi 6E", "OLED", "2-в-1"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 53, brand: "HP", model: "Envy 16", category: "laptop", price: 119990, year: 2024, rating: 4.5, ram: 16, storage: 1024, screen: 16, battery: 12, processor: "Core i7-13700H", camera: "1080p", weight: 2.1, features: ["Wi-Fi 6E", "RTX 4060"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 54, brand: "HP", model: "Pavilion 15", category: "laptop", price: 64990, year: 2024, rating: 4.2, ram: 8, storage: 512, screen: 15.6, battery: 10, processor: "Core i5-1335U", camera: "720p", weight: 1.75, features: ["Wi-Fi 6", "IPS"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      
+      { id: 55, brand: "Dell", model: "XPS 13 Plus", category: "laptop", price: 149990, year: 2024, rating: 4.7, ram: 16, storage: 512, screen: 13.4, battery: 12, processor: "Core Ultra 7", camera: "1080p", weight: 1.26, features: ["Wi-Fi 6E", "OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 56, brand: "Dell", model: "Inspiron 14", category: "laptop", price: 69990, year: 2024, rating: 4.3, ram: 16, storage: 512, screen: 14, battery: 11, processor: "Core i5-1335U", camera: "720p", weight: 1.54, features: ["Wi-Fi 6", "FHD"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+
+      // === НОУТБУКИ: Huawei / Другие ===
+      { id: 57, brand: "Huawei", model: "MateBook X Pro 2024", category: "laptop", price: 149990, year: 2024, rating: 4.6, ram: 16, storage: 1024, screen: 14.2, battery: 14, processor: "Core Ultra 7", camera: "1080p", weight: 1.26, features: ["Wi-Fi 6E", "3K OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 58, brand: "Huawei", model: "MateBook 14s", category: "laptop", price: 94990, year: 2024, rating: 4.4, ram: 16, storage: 512, screen: 14.2, battery: 13, processor: "Core i5-13500H", camera: "1080p", weight: 1.43, features: ["Wi-Fi 6", "2.5K"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 59, brand: "Honor", model: "MagicBook X14 Pro", category: "laptop", price: 64990, year: 2024, rating: 4.3, ram: 16, storage: 512, screen: 14, battery: 12, processor: "Core i5-13420H", camera: "720p", weight: 1.4, features: ["Wi-Fi 6", "FHD IPS"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+      { id: 60, brand: "Xiaomi", model: "Book Pro 14", category: "laptop", price: 84990, year: 2024, rating: 4.4, ram: 16, storage: 512, screen: 14, battery: 12, processor: "Core Ultra 5", camera: "1080p", weight: 1.4, features: ["Wi-Fi 6E", "2.8K OLED"], image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" },
+
+      // === УМНЫЕ ЧАСЫ: Apple / Samsung ===
+      { id: 61, brand: "Apple", model: "Watch Series 9", category: "watch", price: 42990, year: 2023, rating: 4.7, ram: 1, storage: 64, screen: 1.9, battery: 1.5, processor: "S9 SiP", camera: "Нет", features: ["ЭКГ", "SpO2", "GPS"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      { id: 62, brand: "Apple", model: "Watch Series 10", category: "watch", price: 49990, year: 2024, rating: 4.8, ram: 1, storage: 64, screen: 2.0, battery: 1.8, processor: "S10 SiP", camera: "Нет", features: ["ЭКГ", "SpO2", "GPS", "Температура"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      { id: 63, brand: "Apple", model: "Watch Ultra 2", category: "watch", price: 79990, year: 2023, rating: 4.8, ram: 1, storage: 64, screen: 2.0, battery: 2.5, processor: "S9 SiP", camera: "Нет", features: ["ЭКГ", "SpO2", "GPS + Cellular", "Дайвинг"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      { id: 64, brand: "Apple", model: "Watch Ultra 3", category: "watch", price: 89990, year: 2024, rating: 4.9, ram: 1, storage: 64, screen: 2.1, battery: 3.0, processor: "S10 SiP", camera: "Нет", features: ["ЭКГ", "SpO2", "GPS + Cellular", "Дайвинг 40м"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      
+      { id: 65, brand: "Samsung", model: "Galaxy Watch 6", category: "watch", price: 29990, year: 2023, rating: 4.4, ram: 1.5, storage: 16, screen: 1.5, battery: 1.2, processor: "Exynos W930", camera: "Нет", features: ["BIA", "Температура", "GPS"], image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400" },
+      { id: 66, brand: "Samsung", model: "Galaxy Watch 7", category: "watch", price: 34990, year: 2024, rating: 4.5, ram: 2, storage: 32, screen: 1.5, battery: 1.4, processor: "Exynos W1000", camera: "Нет", features: ["BIA", "Температура", "GPS", "AI"], image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400" },
+      { id: 67, brand: "Samsung", model: "Galaxy Watch Ultra", category: "watch", price: 54990, year: 2024, rating: 4.6, ram: 2, storage: 32, screen: 1.5, battery: 2.0, processor: "Exynos W1000", camera: "Нет", features: ["BIA", "Температура", "Дайвинг", "GPS"], image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400" },
+
+      // === УМНЫЕ ЧАСЫ: Garmin / Huawei / Xiaomi ===
+      { id: 68, brand: "Garmin", model: "Fenix 8", category: "watch", price: 89990, year: 2024, rating: 4.8, ram: 1, storage: 32, screen: 1.4, battery: 21, processor: "Garmin", camera: "Нет", features: ["GPS", "NFC", "Дайвинг", "Солнечная"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 69, brand: "Garmin", model: "Forerunner 965", category: "watch", price: 59990, year: 2024, rating: 4.7, ram: 1, storage: 32, screen: 1.4, battery: 15, processor: "Garmin", camera: "Нет", features: ["GPS", "AMOLED", "Бег"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 70, brand: "Garmin", model: "Venu 3", category: "watch", price: 44990, year: 2024, rating: 4.6, ram: 1, storage: 16, screen: 1.4, battery: 10, processor: "Garmin", camera: "Нет", features: ["GPS", "AMOLED", "Здоровье"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      
+      { id: 71, brand: "Huawei", model: "Watch GT 5 Pro", category: "watch", price: 34990, year: 2024, rating: 4.6, ram: 1, storage: 32, screen: 1.43, battery: 14, processor: "Kirin A2", camera: "Нет", features: ["GPS", "NFC", "ЭКГ", "Дайвинг"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 72, brand: "Huawei", model: "Watch GT 4", category: "watch", price: 24990, year: 2023, rating: 4.5, ram: 1, storage: 32, screen: 1.43, battery: 14, processor: "Kirin A1", camera: "Нет", features: ["GPS", "NFC", "100+ режимов"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 73, brand: "Huawei", model: "Watch Fit 3", category: "watch", price: 14990, year: 2024, rating: 4.3, ram: 1, storage: 8, screen: 1.82, battery: 10, processor: "Kirin", camera: "Нет", features: ["GPS", "AMOLED", "Лёгкие"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      
+      { id: 74, brand: "Xiaomi", model: "Watch S3", category: "watch", price: 19990, year: 2024, rating: 4.4, ram: 1, storage: 32, screen: 1.43, battery: 15, processor: "W5+", camera: "Нет", features: ["GPS", "NFC", "HyperOS"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 75, brand: "Xiaomi", model: "Watch 2 Pro", category: "watch", price: 19990, year: 2024, rating: 4.3, ram: 1, storage: 32, screen: 1.43, battery: 2, processor: "W5+", camera: "Нет", features: ["GPS", "NFC", "Wear OS"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 76, brand: "Xiaomi", model: "Smart Band 8 Pro", category: "watch", price: 5990, year: 2024, rating: 4.2, ram: 0.5, storage: 4, screen: 1.74, battery: 14, processor: "RTOS", camera: "Нет", features: ["GPS", "AMOLED", "Бюджет"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+
+      // === УМНЫЕ ЧАСЫ: OnePlus / Realme / Honor ===
+      { id: 77, brand: "OnePlus", model: "Watch 3", category: "watch", price: 29990, year: 2024, rating: 4.4, ram: 1, storage: 32, screen: 1.43, battery: 2.0, processor: "W5", camera: "Нет", features: ["GPS", "NFC", "Wear OS", "100+ режимов"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      { id: 78, brand: "OnePlus", model: "Watch 2", category: "watch", price: 24990, year: 2024, rating: 4.2, ram: 1, storage: 32, screen: 1.43, battery: 1.7, processor: "W5", camera: "Нет", features: ["GPS", "NFC", "Fast Charge"], image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+      { id: 79, brand: "Realme", model: "Watch S2", category: "watch", price: 14990, year: 2024, rating: 4.1, ram: 1, storage: 16, screen: 1.43, battery: 1.5, processor: "RTOS", camera: "Нет", features: ["GPS", "NFC", "100+ режимов"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+      { id: 80, brand: "Honor", model: "Watch 4 Pro", category: "watch", price: 39990, year: 2024, rating: 4.5, ram: 1, storage: 32, screen: 1.5, battery: 4.5, processor: "Kirin", camera: "Нет", features: ["ЭКГ", "GPS", "NFC", "eSIM"], image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" }
+    ];
+
+    let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+    const listEl = document.getElementById('device-list');
+    const priceSlider = document.getElementById('filter-price');
+    const priceVal = document.getElementById('price-val');
+    const comparePanel = document.getElementById('compare-panel');
+    const compareCount = document.getElementById('count');
+
+    function init() {
+      renderList();
+      updatePanel();
+      priceSlider.addEventListener('input', (e) => {
+        priceVal.textContent = Number(e.target.value).toLocaleString('ru-RU') + ' ₽';
+        renderList();
+      });
+      document.querySelectorAll('.controls select').forEach(el => el.addEventListener('change', renderList));
+    }
+
+    function renderList() {
+      const cat = document.getElementById('filter-category').value;
+      const brand = document.getElementById('filter-brand').value;
+      const maxPrice = Number(priceSlider.value);
+      const minRam = document.getElementById('filter-ram').value;
+      const sortType = document.getElementById('sort').value;
+
+      let filtered = devices.filter(d => {
+        if (cat !== 'all' && d.category !== cat) return false;
+        if (brand !== 'all' && d.brand !== brand) return false;
+        if (d.price > maxPrice) return false;
+        if (minRam !== 'all' && d.ram < Number(minRam)) return false;
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortType === 'price-asc') return a.price - b.price;
+        if (sortType === 'price-desc') return b.price - a.price;
+        if (sortType === 'year') return b.year - a.year;
+        if (sortType === 'rating') return b.rating - a.rating;
+        return 0;
+      });
+
+      const header = `<div class="list-header">
+  <div>Фото</div>
+  <div>Модель</div>
+  <div>Рейтинг</div>
+  <div>Цена</div>
+  <div>Где купить</div>
+  <div>Действие</div>
+</div>`;
+
+      listEl.innerHTML = header + filtered.map(d => `
+        <div class="device-row" data-id="${d.id}">
+          <div class="row-img">
+            <img src="${d.image}" alt="${d.model}" onerror="this.style.display='none'">
+          </div>
+          <div class="row-info">
+            <div class="row-title">${d.model}</div>
+            <div class="row-brand">${d.brand} • ${d.year}</div>
+            <div class="row-specs">${d.processor} • ${d.ram} ГБ ОЗУ • ${d.screen}" • ${d.battery} ${d.category === 'smartphone' ? 'мАч' : 'ч'}</div>
+          </div>
+          <div class="row-meta">
+            <div class="row-rating">${d.rating} ★</div>
+            <div class="row-price">${d.price.toLocaleString('ru-RU')} ₽</div>
+          </div>
+          <div class="buy-links">
+            <a href="https://www.dns-shop.ru/search/?q=${encodeURIComponent(d.model)}" target="_blank" rel="nofollow noopener" class="buy-btn dns">DNS</a>
+            <a href="https://www.citilink.ru/search/?text=${encodeURIComponent(d.model)}" target="_blank" rel="nofollow noopener" class="buy-btn citilink">Ситилинк</a>
+            <a href="https://market.yandex.ru/search?text=${encodeURIComponent(d.model)}" target="_blank" rel="nofollow noopener" class="buy-btn ymarket">Я.Маркет</a>
+            <a href="https://www.mvideo.ru/search?query=${encodeURIComponent(d.model)}" target="_blank" rel="nofollow noopener" class="buy-btn mvideo">М.Видео</a>
+          </div>
+          <div class="row-action">
+            <button class="btn-compare ${compareList.includes(d.id) ? 'active' : ''}" onclick="toggleCompare(${d.id}); return false;">
+              ${compareList.includes(d.id) ? '✓' : '📊'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCompare(id) {
+      const idx = compareList.indexOf(id);
+      if (idx === -1) {
+        if (compareList.length >= 5) return alert('Можно сравнить максимум 5 устройств');
+        compareList.push(id);
+      } else {
+        compareList.splice(idx, 1);
+      }
+      localStorage.setItem('compareList', JSON.stringify(compareList));
+      updatePanel();
+      renderList();
+    }
+
+    function clearCompare() {
+      compareList = [];
+      localStorage.setItem('compareList', JSON.stringify(compareList));
+      updatePanel();
+      renderList();
+    }
+
+    function updatePanel() {
+      compareCount.textContent = compareList.length;
+      comparePanel.classList.toggle('show', compareList.length > 0);
+    }
+
+    function toggleView(view) {
+      document.getElementById('catalog-view').style.display = view === 'catalog' ? 'block' : 'none';
+      document.getElementById('compare-view').style.display = view === 'compare' ? 'block' : 'none';
+      comparePanel.style.display = view === 'catalog' ? (compareList.length ? 'flex' : 'none') : 'none';
+      window.scrollTo(0, 0);
+    }
+
+    function renderCompareTable() {
+      if (compareList.length < 2) return alert('Выберите минимум 2 устройства');
+      toggleView('compare');
+
+      const head = document.getElementById('compare-head');
+      const body = document.getElementById('compare-body');
+      head.innerHTML = `<tr><th>Характеристика</th>${compareList.map(id => {
+        const d = devices.find(x => x.id === id);
+        const query = encodeURIComponent(d.model);
+        return `<th>
+          <div style="font-weight:700;color:var(--text)">${d.model}</div>
+          <div style="font-size:13px;color:var(--text-muted)">${d.brand}</div>
+          <div class="price-cell" style="font-size:15px;margin-top:4px;margin-bottom:8px">${d.price.toLocaleString('ru-RU')} ₽</div>
+          <div class="buy-links" style="gap:4px;justify-content:center;">
+            <a href="https://www.dns-shop.ru/search/?q=${query}" target="_blank" rel="nofollow noopener" class="buy-btn dns">DNS</a>
+            <a href="https://www.citilink.ru/search/?text=${query}" target="_blank" rel="nofollow noopener" class="buy-btn citilink">Ситилинк</a>
+            <a href="https://market.yandex.ru/search?text=${query}" target="_blank" rel="nofollow noopener" class="buy-btn ymarket">Я.Маркет</a>
+            <a href="https://www.mvideo.ru/search?query=${query}" target="_blank" rel="nofollow noopener" class="buy-btn mvideo">М.Видео</a>
+          </div>
+        </th>`;
+      }).join('')}</tr>`;
+
+      const specs = [
+        { key: 'processor', label: 'Процессор', type: 'text' },
+        { key: 'ram', label: 'ОЗУ', type: 'num', higher: true },
+        { key: 'storage', label: 'Накопитель', type: 'num', higher: true },
+        { key: 'screen', label: 'Экран', type: 'num', higher: true },
+        { key: 'battery', label: 'Батарея', type: 'num', higher: true },
+        { key: 'rating', label: 'Рейтинг', type: 'num', higher: true, suffix: ' ★' },
+        { key: 'camera', label: 'Камера', type: 'text', full: true },
+        { key: 'weight', label: 'Вес', type: 'num', full: true, lower: true },
+        { key: 'features', label: 'Особенности', type: 'text', full: true }
+      ];
+
+      body.innerHTML = specs.map(s => {
+        let rowHtml = `<tr class="spec-row ${s.full ? 'hidden-spec' : ''}"><td>${s.label}</td>`;
+        const values = compareList.map(id => devices.find(d => d.id === id)[s.key] ?? '-');
+        if (s.type === 'num') {
+          const nums = values.map(v => typeof v === 'number' ? v : 0);
+          const max = Math.max(...nums);
+          const min = Math.min(...nums);
+          values.forEach((v, i) => {
+            const isBest = (s.higher && v === max) || (s.lower && v === min);
+            rowHtml += `<td class="${isBest ? 'best-value' : ''}">${v}${s.suffix || ''}</td>`;
+          });
+        } else {
+          values.forEach(v => rowHtml += `<td>${Array.isArray(v) ? v.join(', ') : v}</td>`);
+        }
+        return rowHtml + '</tr>';
+      }).join('');
+
+      const prices = compareList.map(id => devices.find(d => d.id === id).price);
+      const minPrice = Math.min(...prices);
+      document.querySelectorAll('.price-cell').forEach((el, i) => {
+        if (prices[i] === minPrice) el.classList.add('best-value');
+      });
+    }
+
+    function toggleSpecsVisibility() {
+      const btn = document.getElementById('toggle-full-specs');
+      const rows = document.querySelectorAll('.hidden-spec');
+      const isHidden = rows[0]?.style.display !== 'table-row';
+      rows.forEach(r => r.style.display = isHidden ? 'table-row' : 'none');
+      btn.textContent = isHidden ? 'Скрыть дополнительные характеристики' : 'Показать все характеристики';
+    }
+
+    // Инициализация
+    init();
+  </script>
+</body>
+</html>
