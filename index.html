@@ -471,7 +471,7 @@
       listEl.innerHTML = header + filtered.map(d => `
         <div class="device-row" data-id="${d.id}">
           <div class="row-img">
-            <img src="${d.image}" alt="${d.model}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%239ca3af%22 font-family=%22sans-serif%22 font-size=%2240%22 x=%2250%22 y=%2255%22 text-anchor=%22middle%22%3E📱%3C/text%3E%3C/svg%3E'">
+            <img src="${d.image}" alt="${d.model}">
           </div>
           <div class="row-info">
             <div class="row-title">${d.model}</div>
